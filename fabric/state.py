@@ -206,11 +206,11 @@ env_options = [
     ),
    
     # Using .ssh/config file 
-    make_option('-S', '--ssh-config',
+    make_option('-S', '--no-ssh-config',
         dest='use_ssh_config',
-        action='store_true',
-        default=False,
-        help='force usage .ssh/config file'
+        action='store_false',
+        default=True,
+        help='do not user names from .ssh/config file'
     ),
         
 ]
