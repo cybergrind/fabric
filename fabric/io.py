@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import sys
+import time
 from select import select
 
 from fabric.context_managers import settings, char_buffered
@@ -126,3 +127,4 @@ def input_loop(chan, using_pty):
                 # output level, don't want it to be accidentally hidden
                 sys.stdout.write(byte)
                 sys.stdout.flush()
+        time.sleep(0.1)
