@@ -209,15 +209,15 @@ env_options = [
         default=True,
         help="do not use pseudo-terminal in run/sudo"
     ),
-   
-    # Using .ssh/config file 
+
+    # Using .ssh/config file
     make_option('-S', '--no-ssh-config',
         dest='use_ssh_config',
         action='store_false',
         default=True,
         help='do not user names from .ssh/config file'
     ),
-        
+
     # Abort on prompting flag
     make_option('--abort-on-prompts',
         action='store_true',
