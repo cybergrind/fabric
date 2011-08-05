@@ -23,7 +23,7 @@ win32 = (sys.platform == 'win32')
 
 #
 # Environment dictionary - support structures
-# 
+#
 
 class _AttributeDict(dict):
     """
@@ -91,7 +91,7 @@ def _rc_path():
         from win32com.shell.shell import SHGetSpecialFolderPath
         from win32com.shell.shellcon import CSIDL_PROFILE
         return "%s/%s" % (
-            SHGetSpecialFolderPath(0,CSIDL_PROFILE),
+            SHGetSpecialFolderPath(0, CSIDL_PROFILE),
             rc_file
         )
 
@@ -142,6 +142,11 @@ env_options = [
     make_option('-R', '--roles',
         default=[],
         help="comma-separated list of roles to operate on"
+    ),
+
+    make_option('-x', '--exclude-hosts',
+        default=[],
+        help="comma-separated list of hosts to exclude"
     ),
 
     make_option('-i', 
@@ -213,6 +218,20 @@ env_options = [
         help='do not user names from .ssh/config file'
     ),
         
+    # Abort on prompting flag
+    make_option('--abort-on-prompts',
+        action='store_true',
+        default=False,
+        help="Abort instead of prompting (for password, host, etc)"
+    ),
+
+    # Keepalive
+    make_option('--keepalive',
+        dest='keepalive',
+        type=int,
+        default=0,
+        help="enables a keepalive every n seconds"
+    ),
 ]
 
 
@@ -232,11 +251,12 @@ env = _AttributeDict({
     'combine_stderr': True,
     'command': None,
     'command_prefixes': [],
-    'cwd': '', # Must be empty string, not None, for concatenation purposes
+    'cwd': '',  # Must be empty string, not None, for concatenation purposes
     'echo_stdin': True,
+    'exclude_hosts': [],
     'host': None,
     'host_string': None,
-    'lcwd': '', # Must be empty string, not None, for concatenation purposes
+    'lcwd': '',  # Must be empty string, not None, for concatenation purposes
     'local_user': _get_system_username(),
     'output_prefix': True,
     'passwords': {},
@@ -244,7 +264,7 @@ env = _AttributeDict({
     'path_behavior': 'append',
     'port': None,
     'real_fabfile': None,
-    'roledefs': {},
+    'roles': [],
     'roledefs': {},
     # -S so sudo accepts passwd via stdin, -p with our known-value prompt for
     # later detection (thus %s -- gets filled with env.sudo_prompt at runtime)
@@ -261,7 +281,6 @@ env = _AttributeDict({
 for option in env_options:
     env[option.dest] = option.default
 
-
 #
 # Command dictionary
 #
@@ -277,11 +296,14 @@ commands = {}
 
 connections = HostConnectionCache()
 
+
 def default_channel():
     """
     Return a channel object based on ``env.host_string``.
     """
-    return connections[env.host_string].get_transport().open_session()
+    chan = connections[env.host_string].get_transport().open_session()
+    chan.input_enabled = True
+    return chan
 
 
 #
@@ -308,7 +330,7 @@ class _AliasDict(_AttributeDict):
     This also means they will not show up in e.g. ``dict.keys()``.
 
     ..note::
-        
+
         Aliases are recursive, so you may refer to an alias within the key list
         of another alias. Naturally, this means that you can end up with
         infinite loops if you're not careful.
@@ -365,3 +387,10 @@ output = _AliasDict({
     'everything': ['warnings', 'running', 'user', 'output'],
     'output': ['stdout', 'stderr']
 })
+
+
+#
+# I/O loop sleep parameter (in seconds)
+#
+
+io_sleep = 0.01

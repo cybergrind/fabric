@@ -7,16 +7,16 @@ from __future__ import with_statement
 import nose
 
 from fabric.api import *
-from fabric.contrib.project import rsync_project
 # Need to import this as fabric.version for reload() purposes
 import fabric.version
 # But nothing is stopping us from making a convenient binding!
 _version = fabric.version.get_version
 
 
-docs_host = 'jforcier@fabfile.org'
+import docs
 
 
+@task(default=True)
 def test(args=None):
     """
     Run all unit tests and doctests.
@@ -31,23 +31,10 @@ def test(args=None):
         abort("Nose encountered an error; you may be missing newly added test dependencies. Try running 'pip install -r requirements.txt'.")
 
 
-def build_docs(clean='no', browse='no'):
-    """
-    Generate the Sphinx documentation.
-    """
-    c = ""
-    if clean.lower() in ['yes', 'y']:
-        c = "clean "
-    b = ""
-    if browse.lower() in ['yes', 'y']:
-        b = " && open _build/html/index.html"
-    local('cd docs; make %shtml%s' % (c, b))
-
-
-def _code_version_is_tagged():
+def code_version_is_tagged():
     return local('git tag | egrep "^%s$"' % _version('short'))
 
-def _update_code_version(force):
+def update_code_version(force):
     """
     Update version data structure in-code and commit that change to git.
 
@@ -66,12 +53,14 @@ def _update_code_version(force):
     local("git add %s" % version_file)
     local("git commit -m \"Cut %s\"" % _version('verbose'))
 
-def _commits_since_tag():
+def commits_since_tag():
     """
     Has any work been done since the last tag?
     """
     return local("git log %s.." % _version('short'))
 
+
+@task
 def tag(force='no', push='no'):
     """
     Tag a new release.
@@ -91,12 +80,12 @@ def tag(force='no', push='no'):
         # Does the current in-code version exist as a Git tag already?
         # If so, this means we haven't updated the in-code version specifier
         # yet, and need to do so.
-        if _code_version_is_tagged():
+        if code_version_is_tagged():
             # That is, if any work has been done since. Sanity check!
-            if not _commits_since_tag() and not force:
+            if not commits_since_tag() and not force:
                 abort("No work done since last tag!")
             # Open editor, update version, commit that change to Git.
-            _update_code_version(force)
+            update_code_version(force)
         # If the tag doesn't exist, the user has already updated version info
         # and we can just move on.
         else:
@@ -114,6 +103,7 @@ def tag(force='no', push='no'):
             local("git push origin %s" % _version('short'))
 
 
+@task
 def build():
     """
     Build (but don't upload) via setup.py
@@ -121,6 +111,7 @@ def build():
     local('python setup.py sdist')
 
 
+@task
 def upload():
     """
     Build, register and upload to PyPI
@@ -128,6 +119,7 @@ def upload():
     local('python setup.py sdist register upload')
 
 
+@task
 def release(force='no'):
     """
     Tag/push, build, upload new version and build/upload documentation.
