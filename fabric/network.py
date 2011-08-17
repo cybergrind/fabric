@@ -65,7 +65,7 @@ class HostConnectionCache(dict):
         # Normalize given key (i.e. obtain username and port, if not given)
         user, host, port = normalize(key)
         # Recombine for use as a key.
-        real_key = join_host_strings(user, host, port)
+        real_key = join_host_strings(user, host, port).strip()
         # If not found, create new connection and store it
         if real_key not in self:
             self[real_key] = connect(user, host, port)
