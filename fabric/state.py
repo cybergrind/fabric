@@ -233,6 +233,8 @@ env_options = [
         action='store_false',
         default=True,
         help='do not user names from .ssh/config file'
+    ),
+
     # Parallel execution model flag
     make_option('-P', '--parallel',
             dest='parallel',
