@@ -83,12 +83,19 @@ below.
 
 .. _optparse: http://docs.python.org/library/optparse.html
 
-.. cmdoption:: -a
+.. cmdoption:: -a, --no_agent
 
-    Sets :ref:`env.no_agent <no_agent>` to ``True``, forcing Paramiko not to
-    talk to the SSH agent when trying to unlock private key files.
+    Sets :ref:`env.no_agent <no_agent>` to ``True``, forcing our SSH layer not
+    to talk to the SSH agent when trying to unlock private key files.
 
     .. versionadded:: 0.9.1
+
+.. cmdoption:: -A, --no-agent-forward
+
+    Sets :ref:`env.no_agent_forward <no_agent_forward>` to ``True``, disabling
+    agent forwarding.
+
+    .. versionadded:: 1.4.0
 
 .. cmdoption:: --abort-on-prompts
 
@@ -163,8 +170,8 @@ below.
 
 .. cmdoption:: -k
 
-    Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing Paramiko to not look
-    for SSH private key files in one's home directory.
+    Sets :ref:`env.no_keys <no_keys>` to ``True``, forcing the SSH layer to not
+    look for SSH private key files in one's home directory.
 
     .. versionadded:: 0.9.1
 
@@ -173,6 +180,12 @@ below.
     Sets :ref:`env.keepalive <keepalive>` to the given (integer) value, specifying an SSH keepalive interval.
 
     .. versionadded:: 1.1
+
+.. cmdoption:: --linewise
+
+    Forces output to be buffered line-by-line instead of byte-by-byte. Often useful or required for :ref:`parallel execution <linewise-output>`.
+
+    .. versionadded:: 1.3
 
 .. cmdoption:: -l, --list
 
@@ -189,6 +202,14 @@ below.
     Sets :ref:`env.password <password>` to the given string; it will then be
     used as the default password when making SSH connections or calling the
     ``sudo`` program.
+
+.. cmdoption:: -P, --parallel
+
+    Sets :ref:`env.parallel <env-parallel>` to ``True``, causing
+    tasks to run in parallel.
+
+    .. versionadded:: 1.3
+    .. seealso:: :doc:`/usage/parallel`
 
 .. cmdoption:: --no-pty
 
@@ -224,7 +245,8 @@ below.
 
 .. cmdoption:: --show=LEVELS
 
-    A comma-separated list of :doc:`output levels <output_controls>` to show by
+    A comma-separated list of :doc:`output levels <output_controls>` to
+    be added to those that are shown by
     default.
 
 .. seealso:: `~fabric.operations.run`, `~fabric.operations.sudo`
@@ -242,6 +264,14 @@ below.
 
     Sets :ref:`env.warn_only <warn_only>` to ``True``, causing Fabric to
     continue execution even when commands encounter error conditions.
+
+.. cmdoption:: -z, --pool-size
+
+    Sets :ref:`env.pool_size <pool-size>`, which specifies how many processes
+    to run concurrently during parallel execution.
+
+    .. versionadded:: 1.3
+    .. seealso:: :doc:`/usage/parallel`
 
 
 .. _task-arguments:
@@ -261,7 +291,7 @@ special syntax you can tack onto the end of any task name:
 * Use commas (``,``) to separate arguments from one another (may be escaped
   by using a backslash, i.e. ``\,``);
 * Use equals signs (``=``) for keyword arguments, or omit them for positional
-  arguments;
+  arguments. May also be escaped with backslashes.
 
 Additionally, since this process involves string parsing, all values will end
 up as Python strings, so plan accordingly. (We hope to improve upon this in

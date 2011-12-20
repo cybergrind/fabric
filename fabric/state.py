@@ -72,7 +72,15 @@ def _get_system_username():
     """
     if not win32:
         import pwd
-        return pwd.getpwuid(os.getuid())[0]
+        try:
+            username = pwd.getpwuid(os.getuid())[0]
+        # getpwuid raises KeyError if it cannot find a username for the given
+        # UID, e.g. on ep.io and similar "non VPS" style services. Rather than
+        # error out, just set the 'default' username to None. Can check for
+        # this value later if required.
+        except KeyError:
+            username = None
+        return username
     else:
         import win32api
         import win32security
@@ -157,10 +165,19 @@ env_options = [
     ),
 
     # Use -a here to mirror ssh(1) options.
+    # Note, much later on: well, no. ssh -a concerns agent *forwarding*. Sigh.
     make_option('-a', '--no_agent',
         action='store_true',
         default=False,
         help="don't use the running SSH agent"
+    ),
+
+    # Another minor departure from SSH, due to above mixup: use -A to allow
+    # disabling of agent forwarding (which is on by default.)
+    make_option('-A', '--no-agent-forward',
+        action='store_true',
+        default=False,
+        help="don't forward local agent to remote end"
     ),
 
     # No matching option for ssh(1) so just picked something appropriate.
@@ -216,6 +233,21 @@ env_options = [
         action='store_false',
         default=True,
         help='do not user names from .ssh/config file'
+    # Parallel execution model flag
+    make_option('-P', '--parallel',
+            dest='parallel',
+            action='store_true',
+            default=False,
+            help="Default to parallel execution method"
+    ),
+
+    # Limits the number of forks the parallel option uses
+    make_option('-z', '--pool-size',
+            dest='pool_size',
+            type='int',
+            metavar='NUM_FORKS',
+            default=0,
+            help="Number of concurrent processes to use when running in parallel",
     ),
 
     # Abort on prompting flag
@@ -231,6 +263,13 @@ env_options = [
         type=int,
         default=0,
         help="enables a keepalive every n seconds"
+    ),
+
+    # Linewise output
+    make_option('--linewise',
+        action='store_true',
+        default=False,
+        help="Print stdout/stderr line-by-line instead of byte-by-byte"
     ),
 ]
 
@@ -385,7 +424,8 @@ output = _AliasDict({
     'user': True
 }, aliases={
     'everything': ['warnings', 'running', 'user', 'output'],
-    'output': ['stdout', 'stderr']
+    'output': ['stdout', 'stderr'],
+    'commands': ['stdout', 'running']
 })
 
 

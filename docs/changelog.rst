@@ -25,6 +25,110 @@ would have also been included in the 1.2 line.
 Changelog
 =========
 
+* :feature:`506` A new :ref:`output alias <output-aliases>`, ``commands``, has
+  been added, which allows hiding remote stdout and local "running command X"
+  output lines.
+* :feature:`72` SSH agent forwarding support has made it into Fabric's ssh
+  library, and hooks for using it have been added (enabled by default; use
+  :option:`-A` to disable.) Thanks to Ben Davis for porting an existing
+  Paramiko patch to `ssh` and providing the necessary tweak to Fabric.
+* :release:`1.3.3 <2011-11-23>`
+* :release:`1.2.5 <2011-11-23>`
+* :release:`1.1.7 <2011-11-23>`
+* :bug:`441` Specifying a task module as a task on the command line no longer
+  blows up but presents the usual "no task by that name" error message instead.
+  Thanks to Mitchell Hashimoto for the catch.
+* :bug:`475` Allow escaping of equals signs in per-task args/kwargs.
+* :bug:`450` Improve traceback display when handling ``ImportError``s for
+  dependencies. Thanks to David Wolever for the patches.
+* :bug:`446` Add QNX to list of secondary-case `~fabric.contrib.files.sed`
+  targets. Thanks to Rodrigo Madruga for the tip.
+* :bug:`443` `~fabric.contrib.files.exists` didn't expand tildes; now it does.
+  Thanks to Riccardo Magliocchetti for the patch.
+* :bug:`437` `~fabric.decorators.with_settings` now correctly preserves the
+  wrapped function's docstring and other attributes. Thanks to Eric Buckley for
+  the catch and Luke Plant for the patch.
+* :bug:`400` Handle corner case of systems where ``pwd.getpwuid`` raises
+  ``KeyError`` for the user's UID instead of returning a valid string. Thanks
+  to Dougal Matthews for the catch.
+* :bug:`397` Some poorly behaved objects in third party modules triggered
+  exceptions during Fabric's "classic or new-style task?" test. A fix has been
+  added which tries to work around these.
+* :bug:`341` `~fabric.contrib.files.append` incorrectly failed to detect that
+  the line(s) given already existed in files hidden to the remote user, and
+  continued appending every time it ran. This has been fixed. Thanks to
+  Dominique Peretti for the catch and Martin Vilcans for the patch.
+* :bug:`342` Combining `~fabric.context_managers.cd` with
+  `~fabric.operations.put` and its ``use_sudo`` keyword caused an unrecoverable
+  error. This has been fixed. Thanks to Egor M for the report.
+* :bug:`482` Parallel mode should imply linewise output; omission of this
+  behavior was an oversight.
+* :bug:`230` Fix regression re: combo of no fabfile & arbitrary command use.
+  Thanks to Ali Saifee for the catch.
+* :release:`1.3.2 <2011-11-07>`
+* :release:`1.2.4 <2011-11-07>`
+* :release:`1.1.6 <2011-11-07>`
+* :support:`459` Update our `setup.py` files to note that PyCrypto released
+  2.4.1, which fixes the setuptools problems.
+* :support:`467` (also :issue:`468`, :issue:`469`) Handful of documentation
+  clarification tweaks. Thanks to Paul Hoffman for the patches.
+* :release:`1.3.1 <2011-10-24>`
+* :bug:`457` Ensured that Fabric fast-fails parallel tasks if any child
+  processes encountered errors. Previously, multi-task invocations would
+  continue to the 2nd, etc task when failures occurred, which does not fit with
+  how Fabric usually behaves. Thanks to Github user ``sdcooke`` for the report
+  and Morgan Goose for the fix.
+* :release:`1.3.0 <2011-10-23>`
+* :release:`1.2.3 <2011-10-23>`
+* :release:`1.1.5 <2011-10-23>`
+* :release:`1.0.5 <2011-10-23>`
+* :support:`275` To support an edge use case of the features released in
+  :issue:`19`, and to lay the foundation for :issue:`275`, we have forked
+  Paramiko into the `Python 'ssh' library <http://pypi.python.org/pypi/ssh/>`_
+  and changed our dependency to it for Fabric 1.3 and higher. This may have
+  implications for the more uncommon install use cases, and package
+  maintainers, but we hope to iron out any issues as they come up.
+* :bug:`323` `~fabric.operations.put` forgot how to expand leading tildes in
+  the remote file path. This has been corrected. Thanks to Piet Delport for the
+  catch.
+* :feature:`21` It is now possible, using the new `~fabric.tasks.execute` API
+  call, to execute task objects (by reference or by name) from within other
+  tasks or in library mode. `~fabric.tasks.execute` honors the other tasks'
+  `~fabric.decorators.hosts`/`~fabric.decorators.roles` decorators, and also
+  supports passing in explicit host and/or role arguments.
+* :feature:`19` Tasks may now be optionally executed in parallel. Please see
+  the :doc:`parallel execution docs </usage/parallel>` for details. Major
+  thanks to Morgan Goose for the initial implementation.
+* :bug:`182` During display of remote stdout/stderr, Fabric occasionally
+  printed extraneous line prefixes (which in turn sometimes overwrote wrapped
+  text.) This has been fixed.
+* :bug:`430` Tasks decorated with `~fabric.decorators.runs_once` printed
+  extraneous 'Executing...' status lines on subsequent invocations. This is
+  noisy at best and misleading at worst, and has been corrected. Thanks to
+  Jacob Kaplan-Moss for the report.
+* :release:`1.2.2 <2011-09-01>`
+* :release:`1.1.4 <2011-09-01>`
+* :release:`1.0.4 <2011-09-01>`
+* :bug:`252` `~fabric.context_managers.settings` would silently fail to set
+  ``env`` values for keys which did not exist outside the context manager
+  block.  It now works as expected. Thanks to Will Maier for the catch and
+  suggested solution.
+* :support:`393` Fixed a typo in an example code snippet in the task docs.
+  Thanks to Hugo Garza for the catch.
+* :bug:`396` :option:`--shortlist` broke after the addition of
+  :option:`--list-format <-F>` and no longer displayed the short list format
+  correctly. This has been fixed.
+* :bug:`373` Re-added missing functionality preventing :ref:`host exclusion
+  <excluding-hosts>` from working correctly.
+* :bug:`303` Updated terminal size detection to correctly skip over non-tty
+  stdout, such as when running ``fab taskname | other_command``.
+* :release:`1.2.1 <2011-08-21>`
+* :release:`1.1.3 <2011-08-21>`
+* :release:`1.0.3 <2011-08-21>`
+* :bug:`417` :ref:`abort-on-prompts` would incorrectly abort when set to True,
+  even if both password and host were defined. This has been fixed. Thanks to
+  Valerie Ishida for the report.
+* :support:`416` Updated documentation to reflect move from Redmine to Github.
 * :bug:`389` Fixed/improved error handling when Paramiko import fails. Thanks
   to Brian Luft for the catch.
 * :release:`1.2.0 <2011-07-12>`
